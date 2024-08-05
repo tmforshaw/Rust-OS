@@ -5,9 +5,9 @@
 #![reexport_test_harness_main = "test_main"]
 #![allow(clippy::empty_loop)]
 
+use operating_system::println;
+
 mod panic;
-mod serial;
-mod vga_buffer;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
@@ -15,8 +15,15 @@ pub extern "C" fn _start() -> ! {
         "This is a testicle of the highest order aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nWagwarn"
     );
 
+    operating_system::init();
+
+    // Invoke a breakpoint
+    x86_64::instructions::interrupts::int3();
+
     #[cfg(test)]
     test_main();
+
+    println!("No crash happened");
 
     loop {}
 }
