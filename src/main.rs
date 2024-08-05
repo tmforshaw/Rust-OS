@@ -11,14 +11,15 @@ mod panic;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    println!(
-        "This is a testicle of the highest order aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nWagwarn"
-    );
+    println!("Hello World!");
 
     operating_system::init();
 
-    // Invoke a breakpoint
-    x86_64::instructions::interrupts::int3();
+    fn so() {
+        so()
+    }
+
+    so();
 
     #[cfg(test)]
     test_main();
