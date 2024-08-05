@@ -20,10 +20,5 @@ pub extern "C" fn _start() -> ! {
 
     println!("No crash happened");
 
-    loop {
-        use operating_system::print;
-        print!("-"); // new
-    }
-
-    loop {}
+    operating_system::hlt_loop();
 }
