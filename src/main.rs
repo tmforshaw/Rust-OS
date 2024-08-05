@@ -1,16 +1,15 @@
 #![no_std]
 #![no_main]
+#![allow(clippy::empty_loop)]
 
 mod panic;
 mod vga_buffer;
 
-use vga_buffer::Writer;
-
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    let mut writer = Writer::new();
-
-    writer.write_string("This is a test");
+    println!(
+        "This is a testicle of the highest order aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nWagwarn"
+    );
 
     loop {}
 }
