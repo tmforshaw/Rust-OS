@@ -15,16 +15,15 @@ pub extern "C" fn _start() -> ! {
 
     operating_system::init();
 
-    fn so() {
-        so()
-    }
-
-    so();
-
     #[cfg(test)]
     test_main();
 
     println!("No crash happened");
+
+    loop {
+        use operating_system::print;
+        print!("-"); // new
+    }
 
     loop {}
 }
