@@ -63,11 +63,15 @@ pub struct Writer {
 
 impl Writer {
     pub fn new() -> Self {
-        Self {
+        let mut writer = Self {
             column_pos: 0,
-            colour_code: ColourCode::new(Colour::Green, Colour::Black),
+            colour_code: ColourCode::new(Colour::Red, Colour::Black),
             buffer: unsafe { &mut *(0xB8000 as *mut Buffer) },
-        }
+        };
+
+        writer.clear();
+
+        writer
     }
 
     pub fn write_byte(&mut self, byte: u8) {
@@ -95,6 +99,8 @@ impl Writer {
             match byte {
                 // Printable ASCII byte or a newline
                 0x20..=0x7e | b'\n' => self.write_byte(byte),
+                // Backspace
+                8 => self.backspace(),
                 _ => self.write_byte(0xfe),
             }
         }
@@ -112,12 +118,55 @@ impl Writer {
         self.column_pos = 0;
     }
 
+    fn backspace(&mut self) {
+        if self.column_pos > 0 {
+            self.buffer.chars[BUFFER_HEIGHT - 1][self.column_pos - 1].write(ScreenChar {
+                ascii_character: b' ',
+                colour_code: self.colour_code,
+            });
+
+            self.column_pos -= 1;
+        } else {
+            self.copy_all_rows_down(BUFFER_HEIGHT - 1);
+            self.column_pos = self.last_non_empty_char(BUFFER_HEIGHT - 1);
+        }
+    }
+
+    fn copy_all_rows_down(&mut self, to: usize) {
+        for row in (1..=to).rev() {
+            for col in 0..BUFFER_WIDTH {
+                self.buffer.chars[row][col] = self.buffer.chars[row - 1][col].clone();
+            }
+        }
+    }
+
+    fn last_non_empty_char(&self, row: usize) -> usize {
+        for col in (0..BUFFER_WIDTH).rev() {
+            if self.buffer.chars[row][col].read().ascii_character != b' ' {
+                return col + 1;
+            }
+        }
+
+        0
+    }
+
     fn clear_row(&mut self, row: usize) {
         for col in 0..BUFFER_WIDTH {
             self.buffer.chars[row][col].write(ScreenChar {
                 ascii_character: b' ',
                 colour_code: self.colour_code,
             });
+        }
+    }
+
+    fn clear(&mut self) {
+        for row in 0..BUFFER_HEIGHT {
+            for col in 0..BUFFER_WIDTH {
+                self.buffer.chars[row][col].write(ScreenChar {
+                    ascii_character: b' ',
+                    colour_code: self.colour_code,
+                });
+            }
         }
     }
 }
@@ -156,20 +205,3 @@ impl fmt::Write for Writer {
         Ok(())
     }
 }
-
-// #[test_case]
-// fn test_println_many() {
-//     for _ in 0..200 {
-//         println!("test output of many lines");
-//     }
-// }
-
-// #[test_case]
-// fn test_println_output() {
-//     let s = "Some test string that fits on a single line";
-//     println!("{}", s);
-//     for (i, c) in s.chars().enumerate() {
-//         let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
-//         assert_eq!(char::from(screen_char.ascii_character), c);
-//     }
-// }

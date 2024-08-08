@@ -5,22 +5,17 @@
 #![reexport_test_harness_main = "test_main"]
 #![allow(clippy::empty_loop)]
 
-extern crate alloc;
+// extern crate alloc;
 
-use alloc::{boxed::Box, rc::Rc, vec, vec::Vec};
-
-use bootloader::{bootinfo, entry_point, BootInfo};
+use bootloader::{entry_point, BootInfo};
 
 use operating_system::{
-    allocator, hlt_loop,
-    memory::{self, translate_addr, BootInfoFrameAllocator},
+    allocator,
+    memory::{self, BootInfoFrameAllocator},
     println,
-    task::{executor::Executor, keyboard, simple_executor::SimpleExecutor, Task},
+    task::{executor::Executor, keyboard, Task},
 };
-use x86_64::{
-    structures::paging::{Page, Translate},
-    VirtAddr,
-};
+use x86_64::{structures::paging::Page, VirtAddr};
 
 mod panic;
 
@@ -41,19 +36,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     #[cfg(test)]
     test_main();
 
-    println!("No crash happened");
-
     let mut executor = Executor::new();
-    executor.spawn(Task::new(example_task(42)));
     executor.spawn(Task::new(keyboard::print_keypresses()));
     executor.run();
-}
-
-async fn async_number(i: u32) -> u32 {
-    i
-}
-
-async fn example_task(i: u32) {
-    let number = async_number(i).await;
-    println!("async number: {}", number);
 }
