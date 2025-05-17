@@ -18,6 +18,7 @@ volatile = "0.2.6"
 x86_64 = "0.15.1"
 
 [package.metadata.bootimage]
+run-args = ["-display", "gtk,zoom-to-fit=on"]
 test-args = [
     "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04", "-serial", "stdio",
     "-display", "none"
